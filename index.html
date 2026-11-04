@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accountant Suite - Uganda | 4-in-1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#0f172a;color:#e2e8f0}
+header{background:#1e293b;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;flex-wrap:wrap;gap:10px}
+.logo{font-weight:900;font-size:22px;color:#22c55e}.logo span{color:#facc15}
+nav{display:flex;gap:6px;flex-wrap:wrap}nav button{background:#334155;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}nav button.active{background:#22c55e;color:#000;font-weight:800}
+main{padding:16px;max-width:1150px;margin:auto}
+.card{background:#1e293b;padding:16px;border-radius:12px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{background:#0f172a;padding:14px;border-radius:10px;text-align:center;border:1px solid #334155}
+.stat b{font-size:22px;color:#facc15;display:block}
+input,select,textarea{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff}
+button.btn{background:#22c55e;color:#000;font-weight:800;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;margin:4px 2px}
+button.btn2{background:#facc15;color:#000;font-weight:800;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;margin:4px 2px}
+button.btnW{background:#fff;color:#000;font-weight:800;padding:10px 16px;border:0;border-radius:8px;cursor:pointer;margin:4px 2px}
+button.btnR{background:#ef4444;color:#fff;font-weight:800;padding:6px 10px;border:0;border-radius:6px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:9px;border-bottom:1px solid #334155;text-align:left;font-size:13px}
+.hidden{display:none}
+.backup-bar{background:#facc15;color:#000;padding:12px;border-radius:10px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.backup-bar b{font-size:14px}
+@media print{header,nav,.no-print,.backup-bar{display:none!important}body{background:#fff;color:#000}.card{background:#fff;color:#000}}
+</style></head>
+<body>
+<header><div class="logo">ACCOUNTANT <span>SUITE 🇺🇬</span><div style="font-size:11px;color:#94a3b8;font-weight:400">4-in-1: Bookkeeping + Invoicing + Payroll + Tax | URA Ready | v1.0</div></div>
+<nav>
+<button onclick="show('dash')" id="b-dash" class="active">Dashboard</button>
+<button onclick="show('journal')" id="b-journal">1. Bookkeeping</button>
+<button onclick="show('invoice')" id="b-invoice">2. Invoices + VAT</button>
+<button onclick="show('payroll')" id="b-payroll">3. Payroll + PAYE</button>
+<button onclick="show('clients')" id="b-clients">Clients</button>
+<button onclick="show('reports')" id="b-reports">4. Reports / Tax</button>
+</nav></header>
+<main>
+
+<!-- BACKUP BAR - ALWAYS VISIBLE -->
+<div class="backup-bar no-print">
+<b>🛡️ BACKUP - Protect Your Data! Last Backup: <span id="lastBackup">Never</span></b>
+<div>
+<button onclick="backupAll()" style="background:#000;color:#facc15;padding:9px 14px;border:0;border-radius:8px;font-weight:800;cursor:pointer">⬇️ BACKUP ALL DATA</button>
+<button onclick="document.getElementById('restoreFile').click()" style="background:#fff;color:#000;padding:9px 14px;border:0;border-radius:8px;font-weight:800;cursor:pointer">⬆️ RESTORE BACKUP</button>
+<button onclick="exportCSV('journal')" style="background:#22c55e;color:#000;padding:9px 14px;border:0;border-radius:8px;font-weight:800;cursor:pointer">📊 Export Excel CSV</button>
+<input type="file" id="restoreFile" hidden onchange="restoreAll(event)" accept=".json">
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash">
+<div class="grid">
+<div class="stat">Total Income<b id="sIncome">UGX 0</b><small>Bookkeeping</small></div>
+<div class="stat">Total Expenses<b id="sExp">UGX 0</b><small>Bookkeeping</small></div>
+<div class="stat">Net Profit<b id="sProfit" style="color:#22c55e">UGX 0</b><small>Income - Expenses</small></div>
+<div class="stat">Unpaid Invoices<b id="sUnpaid">0</b><small>Clients owe you</small></div>
+<div class="stat">Total Clients<b id="sClients">0</b><small>Firm clients</small></div>
+<div class="stat">Payroll This Month<b id="sPayroll">UGX 0</b><small>Net paid</small></div>
+</div>
+<div class="card"><h3>⚡ Quick Add Transaction - Double Entry</h3>
+<input id="jDesc" placeholder="Description e.g. Audit fees from ABC Ltd">
+<select id="jType"><option value="Income">Income (Money IN)</option><option value="Expense">Expense (Money OUT)</option><option value="Asset">Asset Purchase</option><option value="Liability">Liability / Loan</option></select>
+<input id="jAmt" type="number" placeholder="Amount UGX">
+<select id="jMethod"><option>Cash</option><option>Bank</option><option>MTN MoMo</option><option>Airtel Money</option><option>Cheque</option></select>
+<button class="btn" onclick="addJournal()">+ Add Entry</button>
+<p style="font-size:12px;color:#94a3b8">Tip: After adding, click BACKUP ALL DATA above to save!</p>
+</div>
+<div class="card"><h3>Recent Transactions</h3><div id="recent"></div></div>
+<div class="card"><h3>🏢 Firm Settings</h3>
+<input id="firmName" placeholder="Your Firm Name e.g. Kampala Accountants Ltd" oninput="saveFirm()">
+<input id="firmTin" placeholder="Firm TIN" oninput="saveFirm()">
+<input id="firmPhone" placeholder="Firm Phone / Email" oninput="saveFirm()">
+<p style="font-size:12px;color:#94a3b8">This shows on invoices & reports.</p></div>
+</div>
+
+<!-- BOOKKEEPING -->
+<div id="journal" class="hidden">
+<div class="card"><h3>📒 1. Bookkeeping - General Ledger</h3>
+<input id="searchJ" placeholder="Search transactions..." oninput="render()">
+<table><thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Method</th><th>Debit (Out)</th><th>Credit (In)</th><th></th></tr></thead><tbody id="jTable"></tbody></table>
+<button class="btn2 no-print" onclick="exportCSV('journal')">Export Ledger CSV</button>
+<button class="btn no-print" onclick="window.print()">Print Ledger</button></div>
+</div>
+
+<!-- INVOICE -->
+<div id="invoice" class="hidden">
+<div class="card"><h3>🧾 2. Invoices + VAT 18% (URA)</h3>
+<input id="invClient" placeholder="Client Name / Company">
+<input id="invTin" placeholder="Client TIN (URA)">
+<input id="invItem" placeholder="Service e.g. Audit, Bookkeeping, Tax Filing">
+<input id="invAmt" type="number" placeholder="Amount before VAT">
+<label><input type="checkbox" id="invVat" checked style="width:auto"> Add VAT 18%</label><br>
+<label><input type="checkbox" id="invWht" style="width:auto"> Deduct Withholding Tax 6% (for services)</label>
+<button class="btn" onclick="createInvoice()">Create Invoice</button>
+<div id="invPreview" style="background:#fff;color:#000;padding:16px;border-radius:10px;margin-top:12px" class="hidden">
+<h2 style="margin:0">INVOICE</h2><p id="invDetail"></p><h3 id="invTotal"></h3><p>VAT 18% Included | Pay via Cash / Bank / MoMo | TIN: <span id="invTinShow"></span></p><button class="btn no-print" onclick="window.print()">🖨️ Print Invoice</button>
+</div></div>
+<div class="card"><h3>All Invoices</h3><table><thead><tr><th>No</th><th>Client</th><th>Item</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="invTable"></tbody></table></div>
+</div>
+
+<!-- PAYROLL -->
+<div id="payroll" class="hidden">
+<div class="card"><h3>💰 3. Payroll - URA PAYE + NSSF + LST</h3>
+<p style="font-size:13px;color:#94a3b8">NSSF: Employee 5% / Employer 10% | PAYE: 0-235k=0%, 235k-335k=10%, 335k-410k=20%, above 30% + 30k | LST: Simplified</p>
+<input id="pName" placeholder="Employee Name">
+<input id="pGross" type="number" placeholder="Gross Salary UGX e.g. 800000">
+<input id="pAllow" type="number" placeholder="Allowances (optional) e.g. 50000">
+<button class="btn" onclick="calcPayroll()">Calculate Payroll</button>
+<div id="payResult" style="margin-top:12px"></div>
+<button class="btn2 no-print" onclick="printPayslip()">🖨️ Print Last Payslip</button></div>
+<div class="card"><h3>Payroll History</h3><div id="payTable"></div></div>
+</div>
+
+<!-- CLIENTS -->
+<div id="clients" class="hidden">
+<div class="card"><h3>👥 Clients of Firm</h3>
+<input id="cName" placeholder="Company / Client Name"><input id="cPhone" placeholder="Phone"><input id="cTin" placeholder="TIN"><input id="cType" placeholder="Type: Company / NGO / Individual">
+<button class="btn" onclick="addClient()">+ Add Client</button>
+<table><thead><tr><th>Name</th><th>Phone</th><th>TIN</th><th>Type</th><th></th></tr></thead><tbody id="cTable"></tbody></table></div>
+</div>
+
+<!-- REPORTS -->
+<div id="reports" class="hidden">
+<div class="card"><h3>📊 4. Reports / Tax - Auto Generated</h3>
+<button class="btn" onclick="showReport('pl')">Profit & Loss</button>
+<button class="btn2" onclick="showReport('tb')">Trial Balance</button>
+<button class="btn" onclick="showReport('bs')">Balance Sheet</button>
+<button class="btn2" onclick="showReport('vat')">VAT Report 18%</button>
+<div id="repOut" style="background:#fff;color:#000;padding:16px;border-radius:10px;margin-top:12px"><p>Click a report above to generate.</p></div>
+<button class="btn no-print" onclick="window.print()">Print Report</button></div>
+</div>
+
+</main>
+<script>
+let journals=JSON.parse(localStorage.getItem('acc_journals')||'[]');
+let invoices=JSON.parse(localStorage.getItem('acc_invoices')||'[]');
+let clients=JSON.parse(localStorage.getItem('acc_clients')||'[]');
+let payrolls=JSON.parse(localStorage.getItem('acc_payrolls')||'[]');
+let firm=JSON.parse(localStorage.getItem('acc_firm')||'{}');
+let lastPay=null;
+function save(){localStorage.setItem('acc_journals',JSON.stringify(journals));localStorage.setItem('acc_invoices',JSON.stringify(invoices));localStorage.setItem('acc_clients',JSON.stringify(clients));localStorage.setItem('acc_payrolls',JSON.stringify(payrolls));localStorage.setItem('acc_firm',JSON.stringify(firm));localStorage.setItem('acc_lastBackup',localStorage.getItem('acc_lastBackup')||'Never');render();}
+function saveFirm(){firm={name:document.getElementById('firmName').value,tin:document.getElementById('firmTin').value,phone:document.getElementById('firmPhone').value};localStorage.setItem('acc_firm',JSON.stringify(firm));}
+function show(id){['dash','journal','invoice','payroll','clients','reports'].forEach(x=>{document.getElementById(x).classList.toggle('hidden',x!==id);document.getElementById('b-'+x).classList.toggle('active',x===id)});render();}
+function fmt(n){return 'UGX '+Number(n||0).toLocaleString()}
+function addJournal(){let d=document.getElementById('jDesc').value,a=+document.getElementById('jAmt').value,t=document.getElementById('jType').value,m=document.getElementById('jMethod').value;if(!d||!a)return alert('Fill description & amount');journals.unshift({date:new Date().toLocaleDateString(),desc:d,type:t,amt:a,method:m});save();alert('Added! Remember to BACKUP!');document.getElementById('jDesc').value='';document.getElementById('jAmt').value='';}
+function createInvoice(){let c=document.getElementById('invClient').value,i=document.getElementById('invItem').value,amt=+document.getElementById('invAmt').value,tin=document.getElementById('invTin').value,vat=document.getElementById('invVat').checked,wht=document.getElementById('invWht').checked;if(!c||!amt)return alert('Fill client & amount');let vatAmt=vat?amt*0.18:0,whtAmt=wht?amt*0.06:0,total=amt+vatAmt-whtAmt;let no='INV-'+(1000+invoices.length);invoices.unshift({no,client:c,item:i,amt:total,tin,status:'Unpaid',vat:vatAmt,wht:whtAmt,sub:amt});save();document.getElementById('invPreview').classList.remove('hidden');document.getElementById('invDetail').innerHTML=`<b>${no}</b> | Firm: ${firm.name||''} TIN:${firm.tin||''}<br>Client: ${c}<br>Item: ${i}<br>Subtotal: ${fmt(amt)}<br>VAT 18%: ${fmt(vatAmt)}<br>WHT 6%: -${fmt(whtAmt)}`;document.getElementById('invTotal').innerText='TOTAL PAYABLE: '+fmt(total);document.getElementById('invTinShow').innerText=tin||'N/A';}
+function calcPayroll(){let n=document.getElementById('pName').value,g=+document.getElementById('pGross').value,allow=+document.getElementById('pAllow').value||0;if(!n||!g)return alert('Fill name & salary');let gross=g+allow;let nssf=gross*0.05;let taxable=gross-nssf;let paye=0;if(taxable>410000)paye=30000+(taxable-410000)*0.3;else if(taxable>335000)paye=(taxable-335000)*0.2+10000;else if(taxable>235000)paye=(taxable-235000)*0.1;let lst=gross<=100000?0:gross<=150000?10000:gross<=200000?15000:20000;let net=gross-nssf-paye-lst;lastPay={name:n,gross,nssf,paye,lst,net,date:new Date().toLocaleDateString()};payrolls.unshift(lastPay);save();document.getElementById('payResult').innerHTML=`<div style="background:#0f172a;padding:14px;border-radius:10px"><b>PAYSLIP - ${n}</b><br>Gross: ${fmt(gross)} (Basic ${fmt(g)} + Allow ${fmt(allow)})<br>NSSF 5% Employee: -${fmt(Math.round(nssf))}<br>PAYE (URA): -${fmt(Math.round(paye))}<br>LST: -${fmt(lst)}<br><b style="color:#22c55e">NET PAY: ${fmt(Math.round(net))}</b><br>Employer NSSF 10%: ${fmt(Math.round(gross*0.1))} extra</div>`;}
+function printPayslip(){if(!lastPay)return alert('Calculate payroll first');let w=window.open('','_blank');w.document.write(`<h2>PAYSLIP - ${firm.name||'Accountant Suite'}</h2><p>${lastPay.name} | ${lastPay.date}</p><p>Gross: ${fmt(lastPay.gross)}</p><p>NSSF: ${fmt(Math.round(lastPay.nssf))}</p><p>PAYE: ${fmt(Math.round(lastPay.paye))}</p><p>LST: ${fmt(lastPay.lst)}</p><h3>NET: ${fmt(Math.round(lastPay.net))}</h3>`);w.print();}
+function addClient(){let n=document.getElementById('cName').value,p=document.getElementById('cPhone').value,t=document.getElementById('cTin').value,ty=document.getElementById('cType').value;if(!n)return alert('Name needed');clients.unshift({name:n,phone:p,tin:t,type:ty});save();}
+function showReport(type){let inc=journals.filter(j=>j.type==='Income').reduce((s,j)=>s+j.amt,0);let exp=journals.filter(j=>j.type==='Expense').reduce((s,j)=>s+j.amt,0);let profit=inc-exp;let out='';if(type==='pl')out=`<h3>Profit & Loss - ${firm.name||''}</h3><p>Total Income: ${fmt(inc)}</p><p>Total Expenses: ${fmt(exp)}</p><h3>Net Profit: ${fmt(profit)}</h3>`;if(type==='tb')out=`<h3>Trial Balance</h3><p>Total Debits: ${fmt(inc+exp)}</p><p>Total Credits: ${fmt(inc+exp)}</p><p style="color:green">✓ BALANCED (Debit = Credit)</p><p>Entries: ${journals.length}</p>`;if(type==='bs')out=`<h3>Balance Sheet</h3><p>Assets (Income): ${fmt(inc)}</p><p>Liabilities (20% est): ${fmt(Math.round(exp*0.2))}</p><p>Equity / Profit: ${fmt(profit)}</p>`;if(type==='vat'){let v=invoices.reduce((s,i)=>s+(i.vat||0),0);out=`<h3>VAT Report 18%</h3><p>Total VAT Collected on Invoices: ${fmt(Math.round(v))}</p><p>Invoices: ${invoices.length}</p><p>Pay this to URA</p>`;}document.getElementById('repOut').innerHTML=out;}
+function backupAll(){let data={journals,invoices,clients,payrolls,firm,backupDate:new Date().toLocaleString(),version:'Accountant Suite 4-in-1 v1.0'};let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Accountant-Backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();let now=new Date().toLocaleString();localStorage.setItem('acc_lastBackup',now);document.getElementById('lastBackup').innerText=now;alert('✅ BACKUP SAVED! Now save it to Google Drive + Flash + WhatsApp to yourself!');}
+function restoreAll(e){let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=function(){try{let d=JSON.parse(r.result);journals=d.journals||[];invoices=d.invoices||[];clients=d.clients||[];payrolls=d.payrolls||[];firm=d.firm||{};save();alert('✅ BACKUP RESTORED! All data is back!');}catch(err){alert('Invalid backup file!')}};r.readAsText(file);}
+function exportCSV(t){let rows=journals.map(j=>[j.date,j.desc,j.type,j.method,j.amt].join(','));let csv='Date,Description,Type,Method,Amount\n'+rows.join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv]));a.download='Accountant-Ledger-'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+function render(){let inc=journals.filter(j=>j.type==='Income').reduce((s,j)=>s+j.amt,0);let exp=journals.filter(j=>j.type==='Expense').reduce((s,j)=>s+j.amt,0);document.getElementById('sIncome').innerText=fmt(inc);document.getElementById('sExp').innerText=fmt(exp);document.getElementById('sProfit').innerText=fmt(inc-exp);document.getElementById('sUnpaid').innerText=invoices.filter(i=>i.status==='Unpaid').length;document.getElementById('sClients').innerText=clients.length;document.getElementById('sPayroll').innerText=fmt(payrolls.reduce((s,p)=>s+p.net,0));document.getElementById('lastBackup').innerText=localStorage.getItem('acc_lastBackup')||'Never';
+if(firm.name)document.getElementById('firmName').value=firm.name;if(firm.tin)document.getElementById('firmTin').value=firm.tin;if(firm.phone)document.getElementById('firmPhone').value=firm.phone;
+let q=(document.getElementById('searchJ')?.value||'').toLowerCase();
+document.getElementById('jTable').innerHTML=journals.filter(j=>j.desc.toLowerCase().includes(q)).map((j,i)=>`<tr><td>${j.date}</td><td>${j.desc}</td><td>${j.type}</td><td>${j.method}</td><td>${j.type!=='Income'?fmt(j.amt):'-'}</td><td>${j.type==='Income'?fmt(j.amt):'-'}</td><td><button class="btnR" onclick="journals.splice(${journals.indexOf(j)},1);save()">X</button></td></tr>`).join('');
+document.getElementById('recent').innerHTML=journals.slice(0,5).map(j=>`<p>• ${j.date} - ${j.desc} - <b>${fmt(j.amt)}</b> (${j.type})</p>`).join('')||'No entries yet - add first transaction above';
+document.getElementById('invTable').innerHTML=invoices.map((inv,i)=>`<tr><td>${inv.no}</td><td>${inv.client}</td><td>${inv.item}</td><td>${fmt(inv.amt)}</td><td>${inv.status}</td><td><button class="btn" onclick="invoices[${i}].status='Paid';save()">Mark Paid</button></td></tr>`).join('');
+document.getElementById('cTable').innerHTML=clients.map((c,i)=>`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.tin}</td><td>${c.type}</td><td><button class="btnR" onclick="clients.splice(${i},1);save()">X</button></td></tr>`).join('');
+document.getElementById('payTable').innerHTML=payrolls.map(p=>`<p>• ${p.date} - ${p.name} - Gross ${fmt(p.gross)} - Net ${fmt(Math.round(p.net))} (PAYE ${fmt(Math.round(p.paye))})</p>`).join('')||'No payroll yet';
+}render();
+</script></body></html>

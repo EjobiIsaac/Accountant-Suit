@@ -20,9 +20,24 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:9px;bord
 .hidden{display:none}
 .backup-bar{background:#facc15;color:#000;padding:12px;border-radius:10px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
 .backup-bar b{font-size:14px}
+/* LOCK STYLE */
+#lockScreen{position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.lock-box{background:#1e293b;padding:28px;border-radius:14px;max-width:420px;width:100%;text-align:center;border:2px solid #22c55e}
+.lock-box h2{color:#22c55e;margin:0 0 8px}
+.lock-box p{color:#94a3b8;font-size:13px}
+.lock-box input{text-align:center;font-weight:800;letter-spacing:1px}
 @media print{header,nav,.no-print,.backup-bar{display:none!important}body{background:#fff;color:#000}.card{background:#fff;color:#000}}
 </style></head>
 <body>
+<!-- LOCK SCREEN -->
+<div id="lockScreen"><div class="lock-box">
+<h2>🔒 ACCOUNTANT SUITE</h2>
+<p>Enter License Key to Unlock<br>Contact Isaac Savvy - 077xxxxxx to buy key</p>
+<input id="licInput" placeholder="IS-ACCT-XXXX-XXXX">
+<button class="btn" style="width:100%;margin-top:10px" onclick="checkLicense()">UNLOCK ✅</button>
+<p id="licMsg" style="color:#ef4444"></p>
+<p style="font-size:11px">One Key = One Firm. Do Not Share.</p>
+</div></div>
 <header><div class="logo">ACCOUNTANT <span>SUITE 🇺🇬</span><div style="font-size:11px;color:#94a3b8;font-weight:400">4-in-1: Bookkeeping + Invoicing + Payroll + Tax | URA Ready </div></div>
 <nav>
 <button onclick="show('dash')" id="b-dash" class="active">Dashboard</button>
@@ -32,9 +47,7 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:9px;bord
 <button onclick="show('clients')" id="b-clients">Clients</button>
 <button onclick="show('reports')" id="b-reports">4. Reports / Tax</button>
 </nav></header>
-<main>
-
-<!-- BACKUP BAR - ALWAYS VISIBLE -->
+<main><!-- BACKUP BAR - ALWAYS VISIBLE -->
 <div class="backup-bar no-print">
 <b>🛡️ BACKUP - Protect Your Data! Last Backup: <span id="lastBackup">Never</span></b>
 <div>
@@ -79,7 +92,6 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:9px;bord
 <button class="btn2 no-print" onclick="exportCSV('journal')">Export Ledger CSV</button>
 <button class="btn no-print" onclick="window.print()">Print Ledger</button></div>
 </div>
-
 <!-- INVOICE -->
 <div id="invoice" class="hidden">
 <div class="card"><h3>🧾 2. Invoices + VAT 18% (URA)</h3>
@@ -128,8 +140,13 @@ table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:9px;bord
 <button class="btn no-print" onclick="window.print()">Print Report</button></div>
 </div>
 
-</main>
-<script>
+  </main><script>
+// === LICENSE LOCK - ACCOUNTANT SUITE ===
+const VALID_KEYS=["IS-ACCT-4821-9375","IS-ACCT-2210-8890","IS-ACCT-7745-1120","IS-ACCT-9931-5567","IS-ACCT-1102-3344"];
+function checkLicense(){let v=document.getElementById('licInput').value.trim().toUpperCase();if(VALID_KEYS.includes(v)){localStorage.setItem('acct_licensed','YES');localStorage.setItem('acct_key',v);document.getElementById('lockScreen').style.display='none';alert('✅ Unlocked! Welcome to Accountant Suite');}else{document.getElementById('licMsg').innerText='❌ Wrong Key! Contact Isaac Savvy to buy.';}}
+if(localStorage.getItem('acct_licensed')==='YES'){document.getElementById('lockScreen').style.display='none';}
+// === END LOCK ===
+
 let journals=JSON.parse(localStorage.getItem('acc_journals')||'[]');
 let invoices=JSON.parse(localStorage.getItem('acc_invoices')||'[]');
 let clients=JSON.parse(localStorage.getItem('acc_clients')||'[]');
